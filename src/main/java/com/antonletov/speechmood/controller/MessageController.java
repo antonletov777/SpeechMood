@@ -2,9 +2,12 @@ package com.antonletov.speechmood.controller;
 
 import com.antonletov.speechmood.dto.MessagePayload;
 import com.antonletov.speechmood.model.PostComment;
+import com.antonletov.speechmood.repository.PostCommentRepository;
 import com.antonletov.speechmood.service.PostCommentService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class MessageController {
 
     private final PostCommentService commentService;
+    private final PostCommentRepository commentRepository;
 
     @PostMapping("/create/")
     public ResponseEntity<PostComment> create(@RequestBody MessagePayload payload) {
@@ -36,4 +40,5 @@ public class MessageController {
         commentService.deleteComment(currentUserId, id);
         return ResponseEntity.noContent().build();
     }
+
 }

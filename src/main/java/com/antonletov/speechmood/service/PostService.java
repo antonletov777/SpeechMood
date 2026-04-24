@@ -79,7 +79,7 @@ public class PostService {
     }
 
     public boolean isLikedByUser(Long userId, Long postId) {
-        User user = userRepository.findById(userId).orElseThrow();
+        User user = userRepository.findById(Math.toIntExact(userId)).orElseThrow();
         Post post = postRepository.findById(postId).orElseThrow();
         return postLikeRepository.findByUserAndPost(user, post).isPresent();
     }

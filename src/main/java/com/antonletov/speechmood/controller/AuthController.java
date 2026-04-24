@@ -2,7 +2,6 @@ package com.antonletov.speechmood.controller;
 
 import com.antonletov.speechmood.dto.LoginPayload;
 import com.antonletov.speechmood.dto.RegisterPayload;
-import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;

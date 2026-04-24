@@ -72,4 +72,10 @@ public class PostCommentService {
         postCommentRepository.delete(comment);
         log.info("Комментарий {} успешно удален", commentId);
     }
+
+    @Transactional(readOnly = true)
+    public PostComment getCommentById(Long id) {
+        return postCommentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Комментарий не найден"));
+    }
 }
