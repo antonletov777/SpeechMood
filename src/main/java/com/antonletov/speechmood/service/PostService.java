@@ -73,4 +73,22 @@ public class PostService {
                 .orElseThrow(() -> new EntityNotFoundException("Пост не найден"));
         return postLikeRepository.countByPost(post);
     }
+
+    public Post getPostById(Long id) {
+        return postRepository.findById(id).orElseThrow();
+    }
+
+    public boolean isLikedByUser(Long userId, Long postId) {
+        User user = userRepository.findById(Math.toIntExact(userId)).orElseThrow();
+        Post post = postRepository.findById(postId).orElseThrow();
+        return postLikeRepository.findByUserAndPost(user, post).isPresent();
+    }
+
+    public void deletePost(Long userId, Long postId) {
+        Post post = getPostById(postId);
+        if (!post.getAuthor().getId().equals(userId)) {
+            throw new RuntimeException("Нет прав на удаление");
+        }
+        postRepository.delete(post);
+    }
 }

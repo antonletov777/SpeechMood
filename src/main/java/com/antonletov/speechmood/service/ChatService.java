@@ -5,6 +5,7 @@ import com.antonletov.speechmood.model.ChatMessage;
 import com.antonletov.speechmood.model.User;
 import com.antonletov.speechmood.repository.ChatMessageRepository;
 import com.antonletov.speechmood.repository.ChatRepository;
+import com.antonletov.speechmood.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +21,7 @@ import java.util.Set;
 public class ChatService {
 
     private final ChatRepository chatRepository;
-    //private final UserRepository userRepository;
+    private final UserRepository userRepository;
     private final ChatMessageRepository messageRepository;
 
 
@@ -110,6 +111,14 @@ public class ChatService {
         return messageRepository.save(message);
     }
 
+    private User getUser(Long userId) {
+        return userRepository.findById(Math.toIntExact(userId))
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь с ID " + userId + " не найден"));
+    }
 
+    private Chat getChat(Long chatId) {
+        return chatRepository.findById(chatId)
+                .orElseThrow(() -> new EntityNotFoundException("Чат с ID " + chatId + " не найден"));
+    }
 
 }
