@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -23,13 +23,13 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final BlacklistedTokenRepository blacklistedTokenRepository;
 
-    @PostMapping("/register/")
+    @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterPayload payload) {
         userService.registerUser(payload.getUser().getUsername(), payload.getUser().getPassword());
         return ResponseEntity.ok(Map.of("message", "Успешно зарегистрировано!"));
     }
 
-    @PostMapping("/login/")
+    @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginPayload payload) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(payload.getUsername(), payload.getPassword())
@@ -44,7 +44,7 @@ public class AuthController {
         ));
     }
 
-    @PostMapping("/token/refresh/")
+    @PostMapping("/token/refresh")
     public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> payload) {
         String refreshToken = payload.get("refresh");
         String username = jwtService.extractUsername(refreshToken);
@@ -56,7 +56,7 @@ public class AuthController {
         return ResponseEntity.status(401).body(Map.of("error", "Invalid refresh token"));
     }
 
-    @PostMapping("/logout/")
+    @PostMapping("/logout")
     public ResponseEntity<?> logout(jakarta.servlet.http.HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
 

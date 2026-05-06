@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Группа</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body { margin: 0; font-family: sans-serif; background-color: #f4f4f9; }
+
+        .group-container {
+            max-width: 90%;
+            max-height: 1300px;
+            margin: 40px auto;
+            padding: 50px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .row {
+            display: flex;
+            gap: 30px;
+            margin: 0 -15px;
+            align-items: flex-start;
+        }
+
+        .col-md-8 {
+            flex: 0 0 65%;
+            height: 100%;
+            background-color: rgb(106, 148, 179);
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .col-md-4 {
+            flex: 0 0 30%;
+            height: 100%;
+            background-color: rgb(106, 148, 179);
+            border-radius: 8px;
+            padding: 30px;
+        }
+
+        .col-md-4 h3 {
+            margin-top: 20px;
+            margin-bottom: 15px;
+            color: #34495e;
+        }
+
+        h1 {
+            font-size: 32px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: black;
+            margin-bottom: 25px;
+        }
+
+        .messages-container {
+            flex-grow: 1;
+            max-height: 750px;
+            overflow-y: auto;
+            margin-bottom: 30px;
+            padding-right: 10px;
+        }
+
+        .card {
+            background-color: #f8f9fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            padding: 15px;
+        }
+
+        .card-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #34495e;
+            margin-top: 0;
+        }
+
+        .card-text {
+            margin-bottom: 15px;
+        }
+
+        .text-muted {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        form textarea.form-control {
+            width: 100%;
+            min-height: 80px;
+            resize: vertical;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        .btn {
+            background-color: #2ecc71;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .btn:hover {
+            background-color: #27ae60;
+        }
+
+        .btn-danger {
+            background-color: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        .btn-back {
+            background-color: #7f8c8d;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .btn-back:hover {
+            background-color: #95a5a6;
+        }
+
+        .member-list {
+            border-radius: 5px;
+            height: 100%;
+        }
+
+        .member-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            transition: transform 0.2s ease;
+            margin-bottom: 5px;
+        }
+
+        .member-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+        }
+
+        .member-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-right: 15px;
+            flex-shrink: 0;
+            background-color: #eee;
+        }
+
+        .member-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .member-info {
+            flex-grow: 1;
+        }
+
+        .member-info h5 {
+            margin: 0 0 6px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .member-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .member-actions button {
+            font-size: 13px;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: 0.3s;
+        }
+
+        .btn-add {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        .btn-add:hover {
+            background-color: rgb(30, 124, 69);
+        }
+
+        .btn-outline-danger {
+            background-color: transparent;
+            color: #e74c3c;
+            border-color: #e74c3c;
+        }
+
+        .btn-outline-danger:hover {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        @media (max-width: 992px) {
+            .row { flex-direction: column; }
+            .col-md-8, .col-md-4 { width: 100%; flex: 0 0 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="group-container">
+    <button onclick="window.location.href='list.html'" class="btn-back">← Назад</button>
+
+    <div class="row">
+        <div class="col-md-8">
+            <h1 id="group-name">Загрузка...</h1>
+            <p>Создатель: <span id="group-author"></span></p>
+
+            <div id="leave-group-container" style="display: none; margin-bottom: 15px;">
+                <button onclick="leaveGroup()" class="btn btn-danger">Выйти из группы</button>
+            </div>
+
+            <div class="messages-container" id="messages-container">
+                <p class="text-muted">Загрузка сообщений...</p>
+            </div>
+
+            <form id="send-message-form">
+                <div class="form-group">
+                    <textarea class="form-control" id="content" placeholder="Напишите сообщение..." required></textarea>
+                </div>
+                <button type="submit" class="btn">Отправить</button>
+            </form>
+        </div>
+
+        <div class="col-md-4 member-list">
+            <div class="members-management">
+                <div class="add-members-form mb-4" id="add-members-section" style="display: none;">
+                    <h3>Добавить друзей в группу</h3>
+                    <div id="friends-list"></div>
+                </div>
+
+                <div class="members-list">
+                    <h3>Участники</h3>
+                    <div class="member-grid" id="members-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const groupId = urlParams.get('id');
+    const token = localStorage.getItem('access');
+    const currentUsername = localStorage.getItem('username');
+
+    let groupData = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        if (!groupId) {
+            window.location.href = '/index.html';
+            return;
+        }
+        await loadGroup();
+        await loadFriends();
+    });
+
+    async function loadGroup() {
+        try {
+            const response = await fetch(`/api/groups/${groupId}`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (!response.ok) throw new Error('Группа не найдена');
+
+            groupData = await response.json();
+
+            document.getElementById('group-name').textContent = groupData.name;
+            document.getElementById('group-author').textContent = groupData.author.username;
+
+            const isMember = groupData.members.some(m => m.username === currentUsername);
+            const isAuthor = groupData.author.username === currentUsername;
+
+            if (isMember && !isAuthor) {
+                document.getElementById('leave-group-container').style.display = 'block';
+            }
+
+            if (isAuthor) {
+                document.getElementById('add-members-section').style.display = 'block';
+            }
+
+            renderMessages(groupData.messages || []);
+            renderMembers(groupData.members || [], isAuthor);
+
+        } catch (error) {
+            console.error(error);
+            alert('Ошибка загрузки группы');
+        }
+    }
+
+    function renderMessages(messages) {
+        const container = document.getElementById('messages-container');
+        container.innerHTML = '';
+
+        if (messages.length === 0) {
+            container.innerHTML = '<p class="text-muted">Сообщений пока нет</p>';
+            return;
+        }
+
+        messages.forEach(msg => {
+            const date = new Date(msg.timestamp || msg.createdAt).toLocaleString();
+            container.innerHTML += `
+                <div class="card">
+                    <h5 class="card-title">${msg.author?.username || 'Аноним'}</h5>
+                    <p class="card-text">${msg.content}</p>
+                    <small class="text-muted">${date}</small>
+                </div>
+            `;
+        });
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function renderMembers(members, isAuthor) {
+        const container = document.getElementById('members-list');
+        container.innerHTML = '';
+
+        members.forEach(member => {
+            let deleteBtn = '';
+            if (isAuthor && member.username !== currentUsername) {
+                deleteBtn = `<button onclick="removeGroupMember(${member.id})" class="btn-outline-danger">Удалить из группы</button>`;
+            }
+
+            container.innerHTML += `
+                <div class="member-card">
+                    <div class="member-avatar">
+                        <img src="/images/avatar-placeholder.png" alt="Avatar">
+                    </div>
+                    <div class="member-info">
+                        <h5>${member.username}</h5>
+                        <div class="member-actions">${deleteBtn}</div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    async function loadFriends() {
+        if (!groupData || groupData.author.username !== currentUsername) return;
+
+        try {
+            const response = await fetch('/api/users/friends', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const friends = await response.json();
+            const container = document.getElementById('friends-list');
+            container.innerHTML = '';
+
+            const groupMemberIds = groupData.members.map(m => m.id);
+
+            friends.forEach(friend => {
+                if (!groupMemberIds.includes(friend.id)) {
+                    container.innerHTML += `
+                        <div class="member-card">
+                            <div class="member-avatar">
+                                <img src="/images/avatar-placeholder.png" alt="Avatar">
+                            </div>
+                            <div class="member-info">
+                                <h5>${friend.username}</h5>
+                                <div class="member-actions">
+                                    <button onclick="addGroupMember(${friend.id})" class="btn-add">Добавить в группу</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    document.getElementById('send-message-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const contentInput = document.getElementById('content');
+        const content = contentInput.value.trim();
+        if (!content) return;
+
+        try {
+            const response = await fetch(`/api/groups/${groupId}/messages/send`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ content: content })
+            });
+
+            if (response.ok) {
+                contentInput.value = '';
+                await loadGroup();
+            } else {
+                const err = await response.json().catch(() => null);
+                alert(err?.message || 'Ошибка отправки');
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    });
+
+    async function addGroupMember(memberId) {
+        try {
+            const response = await fetch(`/api/groups/${groupId}/members/add`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ memberIds: [memberId] })
+            });
+            if (response.ok) {
+                await loadGroup();
+                await loadFriends();
+            } else {
+                alert('Ошибка добавления');
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function removeGroupMember(memberId) {
+        if (!confirm('Удалить участника?')) return;
+        try {
+            const response = await fetch(`/api/groups/${groupId}/members/remove`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ memberIds: [memberId] })
+            });
+            if (response.ok) {
+                await loadGroup();
+                await loadFriends();
+            } else {
+                alert('Ошибка удаления');
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function leaveGroup() {
+        if (!confirm('Выйти из группы?')) return;
+        try {
+            const response = await fetch(`/api/groups/${groupId}/leave`, {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (response.ok) {
+                window.location.href = '/index.html';
+            } else {
+                alert('Ошибка');
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+</script>
+</body>
+</html>

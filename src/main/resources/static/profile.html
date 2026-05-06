@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Профиль пользователя</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body {
+            background-color: rgb(71, 115, 180);
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .profile-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        .profile-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            margin-top: 30px;
+            position: relative;
+        }
+
+        .btn-back {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: #7f8c8d;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-back:hover { background-color: #95a5a6; }
+
+        .custom-button {
+            background-color: rgb(71, 115, 180);
+            color: white;
+            border: 2px solid rgb(71, 115, 180);
+            border-radius: 4px;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.3s;
+            width: 150px;
+            margin: 10px 5px 0 5px;
+        }
+
+        .custom-button:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+
+        form input, form select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        h2 { text-align: center; color: rgb(71, 115, 180); }
+
+        #profile-photo {
+            display: block;
+            margin: 0 auto 20px auto;
+            max-width: 250px;
+            border-radius: 8px;
+        }
+
+        .custom-button.small {
+            font-size: 12px;
+            padding: 4px 10px;
+            margin-left: 10px;
+            margin-top: 0;
+            width: auto;
+        }
+
+        .field-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .field-section p { margin: 0; flex: 1; }
+        .owner-only { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="profile-wrapper">
+    <div class="profile-container">
+        <button onclick="history.back()" class="btn-back">← Назад</button>
+        <h2>Профиль пользователя</h2>
+
+        <div class="profile-info" id="profile-view">
+            <img id="profile-photo" src="/images/avatar-placeholder.png" alt="Фото профиля" style="display: none;">
+            <p id="profile-photo-placeholder">Фото не загружено.</p>
+
+            <div class="field-section" id="username-section">
+                <p><strong>Имя пользователя:</strong> <span id="username-text">Загрузка...</span>
+                    <button class="custom-button small owner-only" onclick="editField('username')">Изменить</button>
+                </p>
+                <div id="username-edit" style="display:none;">
+                    <input type="text" id="username-input">
+                    <button class="custom-button small" onclick="saveField('username')">Сохранить</button>
+                    <button class="custom-button small" onclick="cancelField('username')">Отмена</button>
+                </div>
+            </div>
+
+            <div class="field-section" id="email-section">
+                <p><strong>Email:</strong> <span id="email-text">Загрузка...</span>
+                    <button class="custom-button small owner-only" onclick="editField('email')">Изменить</button>
+                </p>
+                <div id="email-edit" style="display:none;">
+                    <input type="email" id="email-input">
+                    <button class="custom-button small" onclick="saveField('email')">Сохранить</button>
+                    <button class="custom-button small" onclick="cancelField('email')">Отмена</button>
+                </div>
+            </div>
+
+            <div class="field-section" id="age-section">
+                <p><strong>Возраст:</strong> <span id="age-text">Загрузка...</span>
+                    <button class="custom-button small owner-only" onclick="editField('age')">Изменить</button>
+                </p>
+                <div id="age-edit" style="display:none;">
+                    <input type="number" id="age-input">
+                    <button class="custom-button small" onclick="saveField('age')">Сохранить</button>
+                    <button class="custom-button small" onclick="cancelField('age')">Отмена</button>
+                </div>
+            </div>
+
+            <div class="field-section" id="gender-section">
+                <p><strong>Пол:</strong> <span id="gender-text">Загрузка...</span>
+                    <button class="custom-button small owner-only" onclick="editField('gender')">Изменить</button>
+                </p>
+                <div id="gender-edit" style="display:none;">
+                    <select id="gender-input">
+                        <option value="">Выбрать</option>
+                        <option value="M">Мужской</option>
+                        <option value="F">Женский</option>
+                        <option value="O">Другое</option>
+                    </select>
+                    <button class="custom-button small" onclick="saveField('gender')">Сохранить</button>
+                    <button class="custom-button small" onclick="cancelField('gender')">Отмена</button>
+                </div>
+            </div>
+
+            <div class="field-section" id="birthDate-section">
+                <p><strong>Дата рождения:</strong> <span id="birthDate-text">Загрузка...</span>
+                    <button class="custom-button small owner-only" onclick="editField('birthDate')">Изменить</button>
+                </p>
+                <div id="birthDate-edit" style="display:none;">
+                    <input type="date" id="birthDate-input">
+                    <button class="custom-button small" onclick="saveField('birthDate')">Сохранить</button>
+                    <button class="custom-button small" onclick="cancelField('birthDate')">Отмена</button>
+                </div>
+            </div>
+        </div>
+
+        <button class="custom-button owner-only" id="uploadPhotoBtn">Загрузить фото</button>
+        <input type="file" id="photoInput" style="display:none" accept="image/*" />
+    </div>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const profileId = urlParams.get('id') || localStorage.getItem('userId');
+    const token = localStorage.getItem('access');
+    const currentUserId = localStorage.getItem('userId');
+
+    document.addEventListener('DOMContentLoaded', loadProfile);
+
+    async function loadProfile() {
+        if (!profileId) {
+            window.location.href = '/index.html';
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/users/${profileId}`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (!response.ok) throw new Error('Профиль не найден');
+
+            const profile = await response.json();
+
+            document.getElementById('username-text').textContent = profile.username || 'Не указано';
+            document.getElementById('username-input').value = profile.username || '';
+
+            document.getElementById('email-text').textContent = profile.email || 'Не указано';
+            document.getElementById('email-input').value = profile.email || '';
+
+            document.getElementById('age-text').textContent = profile.age || 'Не указано';
+            document.getElementById('age-input').value = profile.age || '';
+
+            document.getElementById('birthDate-text').textContent = profile.birthDate || 'Не указано';
+            document.getElementById('birthDate-input').value = profile.birthDate || '';
+
+            const genderMap = { 'M': 'Мужской', 'F': 'Женский', 'O': 'Другое' };
+            document.getElementById('gender-text').textContent = genderMap[profile.gender] || 'Не указано';
+            document.getElementById('gender-input').value = profile.gender || '';
+
+            if (profile.photoUrl) {
+                const img = document.getElementById('profile-photo');
+                img.src = profile.photoUrl;
+                img.style.display = 'block';
+                document.getElementById('profile-photo-placeholder').style.display = 'none';
+            }
+
+            if (currentUserId === profileId) {
+                document.querySelectorAll('.owner-only').forEach(el => el.style.display = 'inline-block');
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert('Ошибка загрузки профиля');
+        }
+    }
+
+    function editField(field) {
+        document.getElementById(`${field}-text`).style.display = 'none';
+        document.querySelector(`#${field}-section .custom-button`).style.display = 'none';
+        document.getElementById(`${field}-edit`).style.display = 'block';
+    }
+
+    function cancelField(field) {
+        document.getElementById(`${field}-text`).style.display = 'inline';
+        document.querySelector(`#${field}-section .custom-button`).style.display = 'inline-block';
+        document.getElementById(`${field}-edit`).style.display = 'none';
+    }
+
+    async function saveField(field) {
+        let value = document.getElementById(`${field}-input`).value;
+        if (field === 'age') value = value ? parseInt(value) : null;
+        if (!value && field !== 'age') value = null;
+
+        const body = {};
+        body[field] = value;
+
+        try {
+            const response = await fetch(`/api/users/${profileId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (response.ok) {
+                location.reload();
+            } else {
+                const error = await response.json().catch(() => null);
+                alert("Ошибка: " + (error?.message || 'Не удалось сохранить'));
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    document.getElementById('uploadPhotoBtn').addEventListener('click', () => {
+        document.getElementById('photoInput').click();
+    });
+
+    document.getElementById('photoInput').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch(`/api/users/${profileId}/photo`, {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token },
+                body: formData
+            });
+
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Ошибка загрузки фото');
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    });
+</script>
+</body>
+</html>
