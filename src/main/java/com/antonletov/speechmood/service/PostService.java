@@ -84,6 +84,7 @@ public class PostService {
         return postLikeRepository.findByUserAndPost(user, post).isPresent();
     }
 
+    @Transactional
     public void deletePost(Long userId, Long postId) {
         Post post = getPostById(postId);
         if (!post.getAuthor().getId().equals(userId)) {

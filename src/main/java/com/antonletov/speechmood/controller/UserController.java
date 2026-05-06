@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
@@ -17,7 +18,7 @@ public class UserController {
 
     private final UserService userService;
 
-    @GetMapping("/me/")
+    @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser() {
 
         User user = userService.getUserById(1L);
@@ -29,33 +30,40 @@ public class UserController {
     }
 
 
-    @PutMapping("/change-password/")
-    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordPayload payload) {
-        Long currentUserId = 1L; // Временно
+    @PutMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> payload, Principal principal) {
+        try {
+            User user = userService.getUserByUsername(principal.getName());
 
-        userService.changePassword(
-                currentUserId,
-                payload.getOldPassword(),
-                payload.getNewPassword()
-        );
+            userService.changePassword(
+                    user.getId(),
+                    payload.get("oldPassword"),
+                    payload.get("newPassword")
+            );
 
-        return ResponseEntity.ok(Map.of("message", "Пароль успешно изменен"));
+            return ResponseEntity.ok(Map.of("message", "Пароль успешно обновлен"));
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("message", "Внутренняя ошибка сервера"));
+        }
     }
 
 
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
 
-    @GetMapping("/{id}/")
+    @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
 
-    @DeleteMapping("/{id}/")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
