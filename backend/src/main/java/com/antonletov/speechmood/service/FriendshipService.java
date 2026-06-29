@@ -81,4 +81,16 @@ public class FriendshipService {
                 .filter(f -> f.getStatus() == FriendshipStatus.PENDING)
                 .orElseThrow(() -> new IllegalStateException("Активная заявка не найдена"));
     }
+
+    @Transactional(readOnly = true)
+    public List<User> getFriends(Long userId) {
+        User user = getUser(userId);
+
+        List<Friendship> friendships = friendshipRepository.findAllByStatus(FriendshipStatus.ACCEPTED);
+
+        return friendships.stream()
+                .filter(f -> f.getRequester().equals(user) || f.getAddressee().equals(user))
+                .map(f -> f.getRequester().equals(user) ? f.getAddressee() : f.getRequester())
+                .toList();
+    }
 }

@@ -3,20 +3,26 @@ package com.antonletov.speechmood.controller;
 import com.antonletov.speechmood.dto.ChangePasswordPayload;
 import com.antonletov.speechmood.model.User;
 import com.antonletov.speechmood.service.UserService;
-import lombok.RequiredArgsConstructor;
+import com.antonletov.speechmood.dto.UserDTO;
 import org.springframework.http.ResponseEntity;
+import com.antonletov.speechmood.service.FriendshipService;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
+
+@Slf4j
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
+    private final FriendshipService friendshipService;
 
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser() {
@@ -52,8 +58,18 @@ public class UserController {
 
 
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        List<User> users = userService.getAllUsers();
+
+        // Преобразование из Entity в DTO
+        List<UserDTO> userDTOs = users.stream()
+                .map(user -> UserDTO.builder()
+                        .id(user.getId())
+                        .username(user.getUsername())
+                        .build())
+                .toList();
+
+        return ResponseEntity.ok(userDTOs);
     }
 
 
@@ -67,5 +83,12 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/friends")
+    public ResponseEntity<List<User>> getFriends(Principal principal) {
+
+        User currentUser = userService.getUserByUsername(principal.getName());
+        return ResponseEntity.ok(friendshipService.getFriends(currentUser.getId()));
     }
 }
