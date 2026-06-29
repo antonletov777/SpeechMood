@@ -25,7 +25,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterPayload payload) {
-        userService.registerUser(payload.getUser().getUsername(), payload.getUser().getPassword());
+        userService.registerUser(payload.getUsername(), payload.getPassword());
         return ResponseEntity.ok(Map.of("message", "Успешно зарегистрировано!"));
     }
 

@@ -10,11 +10,11 @@
 <nav class="main-nav">
     <div class="nav-container">
         <div class="nav-links" id="nav-links">
-            <a href="/index.html">Главная</a>
+            <a href="/frontend/index.html">Главная</a>
         </div>
         <div class="nav-auth" id="nav-auth">
-            <a href="/login.html">Войти</a>
-            <a href="/register.html" class="register-btn">Регистрация</a>
+            <a href="/frontend/login.html">Войти</a>
+            <a href="/frontend/register.html" class="register-btn">Регистрация</a>
         </div>
     </div>
 </nav>
@@ -83,7 +83,7 @@
             navAuth.innerHTML = `
                     <span id="username-display" style="margin-right: 15px; font-weight: bold; color: #333;">${userData.username}</span>
                     <a href="/profile.html?id=${userData.id}">Профиль</a>
-                    <a href="/change-password.html" style="margin-right: 10px;">Сменить пароль</a>
+                    <a href="/frontend/change-password.html" style="margin-right: 10px;">Сменить пароль</a>
                     <button class="logout-btn" onclick="logout()">Выход</button>
                 `;
         }
