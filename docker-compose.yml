@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  # 1. База данных PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: speechmood-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: speechmood
+      POSTGRES_USER: leon
+      POSTGRES_PASSWORD: password123
+    networks:
+      - speechmood-network
+
+  # 2. Бэкенд (Spring Boot)
+  backend:
+    build:
+      context: ./backend # Путь к папке с бэкендом
+      dockerfile: backend.Dockerfile
+    container_name: speechmood-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/speechmood
+      SPRING_DATASOURCE_USERNAME: leon
+      SPRING_DATASOURCE_PASSWORD: password123
+    networks:
+      - speechmood-network
+
+  # 3. Фронтенд (Nginx + Vanilla JS)
+  frontend:
+    build:
+      context: ./frontend # Путь к папке с фронтендом
+      dockerfile: frontend.Dockerfile
+    container_name: speechmood-frontend
+    ports:
+      - "80:80" # Фронтенд будет доступен на http://localhost
+    depends_on:
+      - backend
+    networks:
+      - speechmood-network
+
+networks:
+  speechmood-network:
+    driver: bridge
