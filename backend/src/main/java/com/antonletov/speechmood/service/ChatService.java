@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Slf4j
@@ -43,6 +44,34 @@ public class ChatService {
         chat.setParticipants(participants);
 
         return chatRepository.save(chat);
+    }
+
+
+    @Transactional
+    public Chat createGroupChat(String title, Long creatorId, Set<Long> participantIds) {
+        log.info("Пользователь {} создает группу '{}'", creatorId, title);
+
+        User creator = getUser(creatorId);
+
+        Set<User> participants = new HashSet<>();
+        participants.add(creator);
+        for (Long id : participantIds) {
+            participants.add(getUser(id));
+        }
+
+        Chat chat = new Chat();
+        chat.setTitle(title);
+        chat.setGroupChat(true);
+        chat.setCreator(creator);
+        chat.setParticipants(participants);
+
+        return chatRepository.save(chat);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Chat> getUserGroups(Long userId) {
+        User user = getUser(userId);
+        return chatRepository.findAllByParticipantsContainingAndIsGroupChatTrue(user);
     }
 
 

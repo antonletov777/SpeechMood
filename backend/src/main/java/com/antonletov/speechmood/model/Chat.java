@@ -24,6 +24,10 @@ public class Chat {
 
     private boolean isGroupChat;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "creator_id")
+    private User creator;
+
     @ManyToMany
     @JoinTable(
             name = "chat_participants",

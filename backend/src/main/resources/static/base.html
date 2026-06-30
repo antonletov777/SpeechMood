@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speechmood</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="main-nav">
+    <div class="nav-container">
+        <div class="nav-links" id="nav-links">
+            <a href="/frontend/index.html">Главная</a>
+        </div>
+        <div class="nav-auth" id="nav-auth">
+            <a href="/frontend/login.html">Войти</a>
+            <a href="/frontend/register.html" class="register-btn">Регистрация</a>
+        </div>
+    </div>
+</nav>
+
+<main id="content">
+
+</main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const accessToken = localStorage.getItem('access');
+        if (accessToken) {
+            checkAuthStatus();
+        } else {
+            showNotAuth();
+        }
+    });
+
+    async function checkAuthStatus() {
+        const accessToken = localStorage.getItem('access');
+
+        try {
+            const response = await fetch('/api/users/me', {
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.status === 401) {
+                const refreshed = await tryRefreshToken();
+                if (refreshed) {
+                    checkAuthStatus();
+                }
+                return;
+            }
+
+            if (!response.ok) {
+                throw new Error('Ошибка проверки авторизации');
+            }
+
+            const data = await response.json();
+            updateAuthUI(data);
+
+        } catch (error) {
+            showNotAuth();
+        }
+    }
+
+    function updateAuthUI(userData) {
+        const navAuth = document.getElementById('nav-auth');
+        const navLinks = document.getElementById('nav-links');
+
+        localStorage.setItem('username', userData.username);
+        localStorage.setItem('userId', userData.id);
+
+        if (navLinks) {
+            navLinks.innerHTML = `
+                    <a href="/auth/index.html">Главная</a>
+                    <a href="/profile/list.html">Подписки</a>
+                    <a href="/groups/list.html">Группы</a>
+                `;
+        }
+
+        if (navAuth) {
+            navAuth.innerHTML = `
+                    <span id="username-display" style="margin-right: 15px; font-weight: bold; color: #333;">${userData.username}</span>
+                    <a href="/profile.html?id=${userData.id}">Профиль</a>
+                    <a href="/frontend/change-password.html" style="margin-right: 10px;">Сменить пароль</a>
+                    <button class="logout-btn" onclick="logout()">Выход</button>
+                `;
+        }
+    }
+
+    function showNotAuth() {
+        const navAuth = document.getElementById('nav-auth');
+        const navLinks = document.getElementById('nav-links');
+
+        if (navLinks) {
+            navLinks.innerHTML = `
+                    <a href="/auth/index.html">Главная</a>
+                `;
+        }
+
+        if (navAuth) {
+            navAuth.innerHTML = `
+                    <a href="/auth/login.html">Войти</a>
+                    <a href="/auth/register.html" class="register-btn">Регистрация</a>
+                `;
+        }
+    }
+
+    async function logout() {
+        const access = localStorage.getItem("access");
+        const refresh = localStorage.getItem("refresh");
+
+        try {
+            await fetch("/api/auth/logout", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + access,
+                },
+                body: JSON.stringify({ refresh: refresh })
+            });
+        } catch (error) {
+            console.error(error);
+        } finally {
+            localStorage.removeItem("access");
+            localStorage.removeItem("refresh");
+            localStorage.removeItem("username");
+            localStorage.removeItem("userId");
+            window.location.href = "/login.html";
+        }
+    }
+
+    async function tryRefreshToken() {
+        const refreshToken = localStorage.getItem('refresh');
+        if (!refreshToken) {
+            showNotAuth();
+            return false;
+        }
+
+        try {
+            const response = await fetch('/api/auth/refresh', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ refresh: refreshToken })
+            });
+
+            if (!response.ok) {
+                throw new Error('Не удалось обновить токен');
+            }
+
+            const data = await response.json();
+            localStorage.setItem('access', data.access || data.accessToken);
+            if (data.refresh || data.refreshToken) {
+                localStorage.setItem('refresh', data.refresh || data.refreshToken);
+            }
+            return true;
+
+        } catch (error) {
+            localStorage.removeItem('access');
+            localStorage.removeItem('refresh');
+            localStorage.removeItem('username');
+            localStorage.removeItem('userId');
+            showNotAuth();
+            return false;
+        }
+    }
+</script>
+</body>
+</html>

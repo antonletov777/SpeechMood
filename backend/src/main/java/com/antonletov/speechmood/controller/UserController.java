@@ -1,6 +1,7 @@
 package com.antonletov.speechmood.controller;
 
 import com.antonletov.speechmood.dto.ChangePasswordPayload;
+import com.antonletov.speechmood.model.Friendship;
 import com.antonletov.speechmood.model.User;
 import com.antonletov.speechmood.service.UserService;
 import com.antonletov.speechmood.dto.UserDTO;
@@ -90,5 +91,58 @@ public class UserController {
 
         User currentUser = userService.getUserByUsername(principal.getName());
         return ResponseEntity.ok(friendshipService.getFriends(currentUser.getId()));
+    }
+
+    @PostMapping("/{id}/follow")
+    public ResponseEntity<?> followUser(@PathVariable Long id, Principal principal) {
+        try {
+
+            User currentUser = userService.getUserByUsername(principal.getName());
+
+            friendshipService.sendRequest(currentUser.getId(), id);
+
+            return ResponseEntity.ok(Map.of("message", "Вы успешно подписались на пользователя"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            log.error("Ошибка при подписке: ", e);
+            return ResponseEntity.internalServerError().body(Map.of("message", "Ошибка при выполнении подписки"));
+        }
+    }
+
+    @GetMapping("/friend-requests")
+    public ResponseEntity<List<Map<String, Object>>> getIncomingRequests(Principal principal) {
+        User currentUser = userService.getUserByUsername(principal.getName());
+        List<Friendship> requests = friendshipService.getIncomingRequests(currentUser.getId());
+        List<Map<String, Object>> result = requests.stream()
+                .map(f -> Map.<String, Object>of(
+                        "id", f.getRequester().getId(),
+                        "username", f.getRequester().getUsername()
+                ))
+                .toList();
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/{id}/accept-request")
+    public ResponseEntity<?> acceptRequest(@PathVariable Long id, Principal principal) {
+        User currentUser = userService.getUserByUsername(principal.getName());
+        friendshipService.acceptRequest(currentUser.getId(), id);
+        return ResponseEntity.ok(Map.of("message", "Заявка принята"));
+    }
+
+    @PostMapping("/{id}/decline-request")
+    public ResponseEntity<?> declineRequest(@PathVariable Long id, Principal principal) {
+        User currentUser = userService.getUserByUsername(principal.getName());
+        friendshipService.declineRequest(currentUser.getId(), id);
+        return ResponseEntity.ok(Map.of("message", "Заявка отклонена"));
+    }
+
+    @GetMapping("/{id}/status")
+    public ResponseEntity<?> getFriendshipStatus(@PathVariable Long id, Principal principal) {
+        User currentUser = userService.getUserByUsername(principal.getName());
+        User targetUser = userService.getUserById(id);
+
+        String status = friendshipService.getFriendshipStatus(currentUser, targetUser);
+        return ResponseEntity.ok(Map.of("status", status));
     }
 }
