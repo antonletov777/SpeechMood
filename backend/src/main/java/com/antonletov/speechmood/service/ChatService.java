@@ -47,6 +47,27 @@ public class ChatService {
 
 
     @Transactional
+    public Chat createGroupChat(String title, Long creatorId, Set<Long> participantIds) {
+        log.info("Пользователь {} создает группу '{}'", creatorId, title);
+
+        User creator = getUser(creatorId);
+
+        Set<User> participants = new HashSet<>();
+        participants.add(creator);
+        for (Long id : participantIds) {
+            participants.add(getUser(id));
+        }
+
+        Chat chat = new Chat();
+        chat.setTitle(title);
+        chat.setGroupChat(true);
+        chat.setParticipants(participants);
+
+        return chatRepository.save(chat);
+    }
+
+
+    @Transactional
     public void addParticipant(Long chatId, Long inviterId, Long newUserId) {
         log.info("Пользователь {} приглашает {} в чат {}", inviterId, newUserId, chatId);
 
