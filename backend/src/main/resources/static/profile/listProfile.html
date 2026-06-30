@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Мои подписки</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body { margin: 0; font-family: sans-serif; background-color: #f4f4f9; padding: 20px; }
+
+        .profiles-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .profiles-container h2 {
+            color: #3498db;
+            font-size: 35px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .btn-back {
+            background-color: #7f8c8d;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .btn-back:hover {
+            background-color: #95a5a6;
+        }
+
+        .friends-stats {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+        }
+
+        .friends-stats .badge {
+            background-color: #3498db;
+            color: white;
+            font-size: 18px;
+            padding: 6px 10px;
+            border-radius: 5px;
+            align-items: center;
+        }
+
+        .friends-stats a.btn {
+            background-color: #2ecc71;
+            color: white;
+            font-size: 14px;
+            padding: 8px 18px;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .friends-stats a.btn:hover {
+            background-color: rgb(30, 124, 69);
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .friend-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            transition: transform 0.2s ease;
+        }
+        .friend-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+        }
+
+        .friend-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-right: 15px;
+            flex-shrink: 0;
+            background-color: #eee;
+        }
+
+        .friend-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .friend-info {
+            flex-grow: 1;
+        }
+
+        .friend-info h5 {
+            margin: 0 0 6px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .friend-info p {
+            margin: 0;
+            color: #777;
+            font-size: 14px;
+        }
+
+        .friend-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .friend-actions a,
+        .friend-actions button {
+            font-size: 13px;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: 0.3s ease;
+            text-decoration: none;
+            user-select: none;
+            display: inline-block;
+        }
+
+        .friend-actions a.btn-outline-primary {
+            background-color: transparent;
+            color: #3498db;
+            border-color: #3498db;
+        }
+        .friend-actions a.btn-outline-primary:hover {
+            background-color: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+
+        .friend-actions button.btn-outline-danger {
+            background-color: transparent;
+            color: #e74c3c;
+            border-color: #e74c3c;
+        }
+        .friend-actions button.btn-outline-danger:hover {
+            background-color: #e74c3c;
+            color: white;
+            border-color: #c0392b;
+        }
+
+        .empty-friends {
+            text-align: center;
+            padding: 50px 20px;
+            background: rgb(44, 131, 218);
+            border-radius: 10px;
+            color: white;
+            display: none;
+        }
+
+        .empty-friends i {
+            font-size: 60px;
+            color: rgb(47, 125, 193);
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="profiles-container">
+    <h2>Мои подписки</h2>
+    <button onclick="window.location.href='/auth/index.html'" class="btn-back">← Назад</button>
+
+    <div class="friends-stats">
+        <span class="badge" id="friends-count">У вас 0 подписок</span>
+        <a href="/profile/add.html" class="btn">Подписаться</a>
+    </div>
+
+    <div class="profile-grid" id="friends-grid"></div>
+
+    <div class="empty-friends" id="empty-friends">
+        <p>У вас пока нет подписок</p>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', loadFriends);
+
+    async function loadFriends() {
+        const token = localStorage.getItem('access');
+        const grid = document.getElementById('friends-grid');
+        const emptyState = document.getElementById('empty-friends');
+        const countBadge = document.getElementById('friends-count');
+
+        try {
+            const response = await fetch('/api/users/friends', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (!response.ok) throw new Error('Ошибка загрузки подписок');
+
+            const friends = await response.json();
+            countBadge.textContent = `У вас ${friends.length} подписок`;
+            grid.innerHTML = '';
+
+            if (friends.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+
+            friends.forEach(friend => {
+                const card = document.createElement('div');
+                card.className = 'friend-card';
+                card.innerHTML = `
+                    <div class="friend-avatar">
+                        <img src="/images/avatar-placeholder.png" alt="Avatar">
+                    </div>
+                    <div class="friend-info">
+                        <h5>${friend.username}</h5>
+                        <p>@${friend.username}</p>
+                        <div class="friend-actions">
+                            <a href="/profile/detail.html?id=${friend.id}" class="btn-outline-primary">Профиль</a>
+                            <button class="btn-outline-danger" onclick="removeFriend(${friend.id}, '${friend.username}')">Удалить</button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        } catch (error) {
+            console.error(error);
+            grid.innerHTML = '<p style="text-align:center; color:red;">Не удалось загрузить список подписок.</p>';
+        }
+    }
+
+    async function removeFriend(friendId, username) {
+        if (!confirm(`Удалить ${username} из друзей?`)) return;
+
+        const token = localStorage.getItem('access');
+
+        try {
+            const response = await fetch(`/api/users/${friendId}/unfollow`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                loadFriends();
+            } else {
+                const errorData = await response.json().catch(() => null);
+                alert(errorData?.message || 'Произошла ошибка при удалении');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Произошла ошибка при удалении');
+        }
+    }
+</script>
+</body>
+</html>

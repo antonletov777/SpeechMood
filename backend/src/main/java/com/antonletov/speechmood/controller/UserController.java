@@ -91,4 +91,37 @@ public class UserController {
         User currentUser = userService.getUserByUsername(principal.getName());
         return ResponseEntity.ok(friendshipService.getFriends(currentUser.getId()));
     }
+
+    @PostMapping("/{id}/follow")
+    public ResponseEntity<?> followUser(@PathVariable Long id, Principal principal) {
+        try {
+
+            User currentUser = userService.getUserByUsername(principal.getName());
+
+            friendshipService.sendRequest(currentUser.getId(), id);
+
+            return ResponseEntity.ok(Map.of("message", "Вы успешно подписались на пользователя"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            log.error("Ошибка при подписке: ", e);
+            return ResponseEntity.internalServerError().body(Map.of("message", "Ошибка при выполнении подписки"));
+        }
+    }
+
+    @PostMapping("/{id}/accept-request")
+    public ResponseEntity<?> acceptRequest(@PathVariable Long id, Principal principal) {
+        User currentUser = userService.getUserByUsername(principal.getName());
+        friendshipService.acceptRequest(id, currentUser.getId());
+        return ResponseEntity.ok(Map.of("message", "Заявка принята"));
+    }
+
+    @GetMapping("/{id}/status")
+    public ResponseEntity<?> getFriendshipStatus(@PathVariable Long id, Principal principal) {
+        User currentUser = userService.getUserByUsername(principal.getName());
+        User targetUser = userService.getUserById(id);
+
+        String status = friendshipService.getFriendshipStatus(currentUser, targetUser);
+        return ResponseEntity.ok(Map.of("status", status));
+    }
 }

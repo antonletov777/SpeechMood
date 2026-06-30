@@ -93,4 +93,10 @@ public class FriendshipService {
                 .map(f -> f.getRequester().equals(user) ? f.getAddressee() : f.getRequester())
                 .toList();
     }
+
+    public String getFriendshipStatus(User user1, User user2) {
+        return friendshipRepository.findAnyRelationship(user1, user2)
+                .map(f -> f.getStatus().name()) // Используем .name() для получения строки "PENDING", "ACCEPTED" и т.д.
+                .orElse("NONE");
+    }
 }
