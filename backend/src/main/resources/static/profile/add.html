@@ -115,7 +115,7 @@
     async function loadProfiles() {
         const token = localStorage.getItem('access');
         const grid = document.getElementById('profile-grid');
-        const currentUsername = localStorage.getItem('username'); // Убедись, что ты сохраняешь его при логине
+        const currentUsername = localStorage.getItem('username');
 
         try {
             const response = await fetch('/api/users', {
@@ -142,7 +142,6 @@
             `;
                 grid.appendChild(card);
 
-                // 2. Сразу запрашиваем статус для этого пользователя
                 updateButtonStatus(user.id);
             });
         } catch (error) {
@@ -150,7 +149,6 @@
         }
     }
 
-    // Функция для обновления состояния кнопки
     async function updateButtonStatus(userId) {
         const token = localStorage.getItem('access');
         try {
