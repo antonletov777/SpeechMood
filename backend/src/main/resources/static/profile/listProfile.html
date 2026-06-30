@@ -57,10 +57,19 @@
             border-radius: 5px;
             text-decoration: none;
             transition: background-color 0.3s ease;
+            text-align: center;
         }
 
         .friends-stats a.btn:hover {
             background-color: rgb(30, 124, 69);
+        }
+
+        .friends-stats a.btn-requests {
+            background-color: #9b59b6;
+        }
+
+        .friends-stats a.btn-requests:hover {
+            background-color: #8e44ad;
         }
 
         .profile-grid {
@@ -180,7 +189,10 @@
 
     <div class="friends-stats">
         <span class="badge" id="friends-count">У вас 0 подписок</span>
-        <a href="/profile/add.html" class="btn">Подписаться</a>
+        <div style="display: flex; flex-direction: column; gap: 8px; align-items: stretch;">
+            <a href="/profile/friend-requests.html" class="btn btn-requests">Заявки в друзья</a>
+            <a href="/profile/add.html" class="btn">Подписаться</a>
+        </div>
     </div>
 
     <div class="profile-grid" id="friends-grid"></div>

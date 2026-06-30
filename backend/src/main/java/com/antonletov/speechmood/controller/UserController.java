@@ -1,6 +1,7 @@
 package com.antonletov.speechmood.controller;
 
 import com.antonletov.speechmood.dto.ChangePasswordPayload;
+import com.antonletov.speechmood.model.Friendship;
 import com.antonletov.speechmood.model.User;
 import com.antonletov.speechmood.service.UserService;
 import com.antonletov.speechmood.dto.UserDTO;
@@ -109,11 +110,31 @@ public class UserController {
         }
     }
 
+    @GetMapping("/friend-requests")
+    public ResponseEntity<List<Map<String, Object>>> getIncomingRequests(Principal principal) {
+        User currentUser = userService.getUserByUsername(principal.getName());
+        List<Friendship> requests = friendshipService.getIncomingRequests(currentUser.getId());
+        List<Map<String, Object>> result = requests.stream()
+                .map(f -> Map.<String, Object>of(
+                        "id", f.getRequester().getId(),
+                        "username", f.getRequester().getUsername()
+                ))
+                .toList();
+        return ResponseEntity.ok(result);
+    }
+
     @PostMapping("/{id}/accept-request")
     public ResponseEntity<?> acceptRequest(@PathVariable Long id, Principal principal) {
         User currentUser = userService.getUserByUsername(principal.getName());
-        friendshipService.acceptRequest(id, currentUser.getId());
+        friendshipService.acceptRequest(currentUser.getId(), id);
         return ResponseEntity.ok(Map.of("message", "Заявка принята"));
+    }
+
+    @PostMapping("/{id}/decline-request")
+    public ResponseEntity<?> declineRequest(@PathVariable Long id, Principal principal) {
+        User currentUser = userService.getUserByUsername(principal.getName());
+        friendshipService.declineRequest(currentUser.getId(), id);
+        return ResponseEntity.ok(Map.of("message", "Заявка отклонена"));
     }
 
     @GetMapping("/{id}/status")
