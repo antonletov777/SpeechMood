@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Slf4j
@@ -61,9 +62,16 @@ public class ChatService {
         Chat chat = new Chat();
         chat.setTitle(title);
         chat.setGroupChat(true);
+        chat.setCreator(creator);
         chat.setParticipants(participants);
 
         return chatRepository.save(chat);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Chat> getUserGroups(Long userId) {
+        User user = getUser(userId);
+        return chatRepository.findAllByParticipantsContainingAndIsGroupChatTrue(user);
     }
 
 

@@ -24,6 +24,24 @@ public class ChatController {
     private final ChatService chatService;
     private final UserService userService;
 
+    @GetMapping
+    public ResponseEntity<List<Map<String, Object>>> getUserGroups(Principal principal) {
+        User currentUser = userService.getUserByUsername(principal.getName());
+        List<Chat> groups = chatService.getUserGroups(currentUser.getId());
+        List<Map<String, Object>> result = groups.stream()
+                .map(g -> {
+                    Map<String, Object> map = new java.util.HashMap<>();
+                    map.put("id", g.getId());
+                    map.put("name", g.getTitle());
+                    if (g.getCreator() != null) {
+                        map.put("author", Map.of("username", g.getCreator().getUsername()));
+                    }
+                    return map;
+                })
+                .toList();
+        return ResponseEntity.ok(result);
+    }
+
     @PostMapping("/create")
     public ResponseEntity<?> createGroup(@RequestBody Map<String, Object> payload, Principal principal) {
         try {
