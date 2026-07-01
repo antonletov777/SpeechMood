@@ -140,6 +140,52 @@ public class ChatService {
         return messageRepository.save(message);
     }
 
+    @Transactional(readOnly = true)
+    public Chat getGroupById(Long chatId) {
+        Chat chat = getChat(chatId);
+        if (!chat.isGroupChat()) {
+            throw new EntityNotFoundException("Группа с ID " + chatId + " не найдена");
+        }
+        return chat;
+    }
+
+    @Transactional
+    public void addGroupMembers(Long chatId, Long requesterId, Set<Long> memberIds) {
+        Chat chat = getChat(chatId);
+        User requester = getUser(requesterId);
+
+        if (!chat.getParticipants().contains(requester)) {
+            throw new IllegalStateException("Вы не являетесь участником этого чата");
+        }
+
+        for (Long memberId : memberIds) {
+            User newUser = getUser(memberId);
+            if (!chat.getParticipants().contains(newUser)) {
+                chat.getParticipants().add(newUser);
+            }
+        }
+        chatRepository.save(chat);
+    }
+
+    @Transactional
+    public void removeGroupMember(Long chatId, Long requesterId, Long memberIdToRemove) {
+        Chat chat = getChat(chatId);
+        User requester = getUser(requesterId);
+        User memberToRemove = getUser(memberIdToRemove);
+
+        boolean isCreator = chat.getCreator() != null && chat.getCreator().getId().equals(requester.getId());
+        if (!isCreator) {
+            throw new IllegalStateException("Только создатель группы может удалять участников");
+        }
+
+        if (memberToRemove.getId().equals(chat.getCreator().getId())) {
+            throw new IllegalStateException("Нельзя удалить создателя группы");
+        }
+
+        chat.getParticipants().remove(memberToRemove);
+        chatRepository.save(chat);
+    }
+
     private User getUser(Long userId) {
         return userRepository.findById(Math.toIntExact(userId))
                 .orElseThrow(() -> new EntityNotFoundException("Пользователь с ID " + userId + " не найден"));
