@@ -26,14 +26,17 @@ public class UserController {
     private final FriendshipService friendshipService;
 
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser() {
+    public ResponseEntity<?> getCurrentUser(Principal principal) {
+        User user = userService.getUserByUsername(principal.getName());
 
-        User user = userService.getUserById(1L);
-
-        return ResponseEntity.ok(Map.of(
-                "id", user.getId(),
-                "username", user.getUsername()
-        ));
+        Map<String, Object> result = new java.util.HashMap<>();
+        result.put("id", user.getId());
+        result.put("username", user.getUsername());
+        result.put("firstName", user.getFirstName());
+        result.put("gender", user.getGender());
+        result.put("age", user.getAge());
+        result.put("avatarUrl", user.getAvatarUrl());
+        return ResponseEntity.ok(result);
     }
 
 
