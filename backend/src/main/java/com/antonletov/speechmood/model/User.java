@@ -28,6 +28,14 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
+    private String firstName;
+
+    private String gender;
+
+    private Integer age;
+
+    private String avatarUrl;
+
 
     @ManyToMany
     @JoinTable(
