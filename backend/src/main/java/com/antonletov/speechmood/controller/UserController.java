@@ -87,6 +87,7 @@ public class UserController {
                 .map(user -> UserDTO.builder()
                         .id(user.getId())
                         .username(user.getUsername())
+                        .avatarUrl(user.getAvatarUrl())
                         .build())
                 .toList();
 
@@ -135,10 +136,13 @@ public class UserController {
         User currentUser = userService.getUserByUsername(principal.getName());
         List<Friendship> requests = friendshipService.getIncomingRequests(currentUser.getId());
         List<Map<String, Object>> result = requests.stream()
-                .map(f -> Map.<String, Object>of(
-                        "id", f.getRequester().getId(),
-                        "username", f.getRequester().getUsername()
-                ))
+                .map(f -> {
+                    Map<String, Object> map = new java.util.HashMap<>();
+                    map.put("id", f.getRequester().getId());
+                    map.put("username", f.getRequester().getUsername());
+                    map.put("avatarUrl", f.getRequester().getAvatarUrl());
+                    return map;
+                })
                 .toList();
         return ResponseEntity.ok(result);
     }

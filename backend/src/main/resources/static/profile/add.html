@@ -134,7 +134,7 @@
                 const card = document.createElement('div');
                 card.className = 'profile-card';
                 card.innerHTML = `
-                <img src="/images/avatar-placeholder.png" alt="Avatar">
+                <img src="${user.avatarUrl || '/images/avatar-placeholder.svg'}" alt="Avatar">
                 <h5>${user.username}</h5>
                 <p>@${user.username}</p>
                 <a href="/profile/detail.html?id=${user.id}">Профиль</a>
