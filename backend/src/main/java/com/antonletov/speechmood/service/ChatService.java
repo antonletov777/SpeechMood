@@ -163,7 +163,8 @@ public class ChatService {
             throw new IllegalArgumentException("Аудиофайл не может быть пустым");
         }
 
-        String contentType = audioFile.getContentType();
+        String rawContentType = audioFile.getContentType();
+        String contentType = rawContentType == null ? null : rawContentType.split(";")[0].trim();
         if (contentType == null || !ALLOWED_AUDIO_TYPES.contains(contentType)) {
             throw new IllegalArgumentException("Неподдерживаемый формат аудио");
         }
