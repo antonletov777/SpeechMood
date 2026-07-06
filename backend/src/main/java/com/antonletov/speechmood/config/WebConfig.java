@@ -13,10 +13,14 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${app.upload.dir}")
     private String uploadDir;
 
+    @Value("${app.upload.voice-dir}")
+    private String voiceDir;
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String location = "file:" + Path.of(uploadDir).toAbsolutePath() + "/";
         registry.addResourceHandler("/uploads/avatars/**")
-                .addResourceLocations(location);
+                .addResourceLocations("file:" + Path.of(uploadDir).toAbsolutePath() + "/");
+        registry.addResourceHandler("/uploads/voice/**")
+                .addResourceLocations("file:" + Path.of(voiceDir).toAbsolutePath() + "/");
     }
 }

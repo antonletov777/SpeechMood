@@ -29,9 +29,11 @@ public class ChatMessage {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "report_id")
-    private EmotionReport emotionReport;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private MessageType type = MessageType.TEXT;
+
+    private String audioUrl;
 
     private LocalDateTime sentAt = LocalDateTime.now();
 }

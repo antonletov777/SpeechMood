@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.util.HashMap;
@@ -72,6 +73,8 @@ public class ChatController {
                     .map(m -> {
                         Map<String, Object> msg = new HashMap<>();
                         msg.put("content", m.getContent());
+                        msg.put("type", m.getType().name());
+                        msg.put("audioUrl", m.getAudioUrl());
                         msg.put("timestamp", m.getSentAt());
                         if (m.getSender() != null) {
                             msg.put("author", Map.of("username", m.getSender().getUsername()));
@@ -96,6 +99,19 @@ public class ChatController {
             String content = payload.get("content");
             ChatMessage message = chatService.sendTextMessage(id, currentUser.getId(), content);
             return ResponseEntity.ok(Map.of("id", message.getId()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{id}/messages/send-voice")
+    public ResponseEntity<?> sendVoiceMessage(@PathVariable Long id,
+                                              @RequestParam("file") MultipartFile file,
+                                              Principal principal) {
+        try {
+            User currentUser = userService.getUserByUsername(principal.getName());
+            ChatMessage message = chatService.sendVoiceMessage(id, currentUser.getId(), file);
+            return ResponseEntity.ok(Map.of("id", message.getId(), "audioUrl", message.getAudioUrl()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }

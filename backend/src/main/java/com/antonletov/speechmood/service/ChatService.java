@@ -2,6 +2,7 @@ package com.antonletov.speechmood.service;
 
 import com.antonletov.speechmood.model.Chat;
 import com.antonletov.speechmood.model.ChatMessage;
+import com.antonletov.speechmood.model.MessageType;
 import com.antonletov.speechmood.model.User;
 import com.antonletov.speechmood.repository.ChatMessageRepository;
 import com.antonletov.speechmood.repository.ChatRepository;
@@ -9,21 +10,35 @@ import com.antonletov.speechmood.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatService {
 
+    private static final Set<String> ALLOWED_AUDIO_TYPES = Set.of(
+            "audio/webm", "audio/ogg", "audio/mpeg", "audio/mp4", "audio/wav", "audio/x-m4a"
+    );
+
     private final ChatRepository chatRepository;
     private final UserRepository userRepository;
     private final ChatMessageRepository messageRepository;
+
+    @Value("${app.upload.voice-dir}")
+    private String voiceDir;
 
 
     @Transactional
@@ -138,6 +153,53 @@ public class ChatService {
         message.setContent(content);
 
         return messageRepository.save(message);
+    }
+
+    @Transactional
+    public ChatMessage sendVoiceMessage(Long chatId, Long senderId, MultipartFile audioFile) {
+        log.info("Пользователь {} отправляет голосовое сообщение в чат {}", senderId, chatId);
+
+        if (audioFile == null || audioFile.isEmpty()) {
+            throw new IllegalArgumentException("Аудиофайл не может быть пустым");
+        }
+
+        String rawContentType = audioFile.getContentType();
+        String contentType = rawContentType == null ? null : rawContentType.split(";")[0].trim();
+        if (contentType == null || !ALLOWED_AUDIO_TYPES.contains(contentType)) {
+            throw new IllegalArgumentException("Неподдерживаемый формат аудио");
+        }
+
+        Chat chat = getChat(chatId);
+        User sender = getUser(senderId);
+
+        if (!chat.getParticipants().contains(sender)) {
+            throw new IllegalStateException("Вы не являетесь участником этого чата");
+        }
+
+        try {
+            Path dir = Path.of(voiceDir);
+            Files.createDirectories(dir);
+
+            String extension = switch (contentType) {
+                case "audio/ogg" -> ".ogg";
+                case "audio/mpeg" -> ".mp3";
+                case "audio/mp4", "audio/x-m4a" -> ".m4a";
+                case "audio/wav" -> ".wav";
+                default -> ".webm";
+            };
+            String fileName = UUID.randomUUID() + extension;
+            audioFile.transferTo(dir.resolve(fileName));
+
+            ChatMessage message = new ChatMessage();
+            message.setChat(chat);
+            message.setSender(sender);
+            message.setType(MessageType.VOICE);
+            message.setAudioUrl("/uploads/voice/" + fileName);
+
+            return messageRepository.save(message);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Не удалось сохранить голосовое сообщение", e);
+        }
     }
 
     @Transactional(readOnly = true)
