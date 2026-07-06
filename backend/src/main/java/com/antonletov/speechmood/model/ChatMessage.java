@@ -29,9 +29,5 @@ public class ChatMessage {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "report_id")
-    private EmotionReport emotionReport;
-
     private LocalDateTime sentAt = LocalDateTime.now();
 }
