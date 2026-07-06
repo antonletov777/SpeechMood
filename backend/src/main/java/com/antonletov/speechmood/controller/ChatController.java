@@ -58,7 +58,13 @@ public class ChatController {
             }
 
             List<Map<String, Object>> members = group.getParticipants().stream()
-                    .map(u -> Map.<String, Object>of("id", u.getId(), "username", u.getUsername()))
+                    .map(u -> {
+                        Map<String, Object> member = new HashMap<>();
+                        member.put("id", u.getId());
+                        member.put("username", u.getUsername());
+                        member.put("avatarUrl", u.getAvatarUrl());
+                        return member;
+                    })
                     .toList();
             result.put("members", members);
 

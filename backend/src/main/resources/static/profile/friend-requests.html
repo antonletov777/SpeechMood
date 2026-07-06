@@ -191,7 +191,7 @@
                 card.id = `card-${user.id}`;
                 card.innerHTML = `
                     <div class="request-avatar">
-                        <img src="/images/avatar-placeholder.png" alt="Avatar">
+                        <img src="${user.avatarUrl || '/images/avatar-placeholder.svg'}" alt="Avatar">
                     </div>
                     <div class="request-info">
                         <h5>${user.username}</h5>

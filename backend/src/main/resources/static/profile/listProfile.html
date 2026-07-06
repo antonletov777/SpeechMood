@@ -234,7 +234,7 @@
                 card.className = 'friend-card';
                 card.innerHTML = `
                     <div class="friend-avatar">
-                        <img src="/images/avatar-placeholder.png" alt="Avatar">
+                        <img src="${friend.avatarUrl || '/images/avatar-placeholder.svg'}" alt="Avatar">
                     </div>
                     <div class="friend-info">
                         <h5>${friend.username}</h5>

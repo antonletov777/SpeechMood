@@ -352,7 +352,7 @@
             container.innerHTML += `
                 <div class="member-card">
                     <div class="member-avatar">
-                        <img src="/images/avatar-placeholder.png" alt="Avatar">
+                        <img src="${member.avatarUrl || '/images/avatar-placeholder.svg'}" alt="Avatar">
                     </div>
                     <div class="member-info">
                         <h5>${member.username}</h5>
@@ -381,7 +381,7 @@
                     container.innerHTML += `
                         <div class="member-card">
                             <div class="member-avatar">
-                                <img src="/images/avatar-placeholder.png" alt="Avatar">
+                                <img src="${friend.avatarUrl || '/images/avatar-placeholder.svg'}" alt="Avatar">
                             </div>
                             <div class="member-info">
                                 <h5>${friend.username}</h5>
