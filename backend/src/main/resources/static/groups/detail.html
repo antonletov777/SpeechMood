@@ -220,6 +220,42 @@
             color: white;
         }
 
+        .message-form-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-mic {
+            background-color: #34495e;
+            color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+        }
+
+        .btn-mic.recording {
+            background-color: #e74c3c;
+            animation: pulse 1.2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.5); }
+            70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+        }
+
+        .voice-message audio {
+            width: 100%;
+            max-width: 320px;
+        }
+
         @media (max-width: 992px) {
             .row { flex-direction: column; }
             .col-md-8, .col-md-4 { width: 100%; flex: 0 0 100%; }
@@ -246,9 +282,12 @@
 
             <form id="send-message-form">
                 <div class="form-group">
-                    <textarea class="form-control" id="content" placeholder="Напишите сообщение..." required></textarea>
+                    <textarea class="form-control" id="content" placeholder="Напишите сообщение..."></textarea>
                 </div>
-                <button type="submit" class="btn">Отправить</button>
+                <div class="message-form-actions">
+                    <button type="submit" class="btn">Отправить</button>
+                    <button type="button" class="btn-mic" id="mic-btn" title="Записать голосовое сообщение">🎤</button>
+                </div>
             </form>
         </div>
 
@@ -328,10 +367,13 @@
 
         messages.forEach(msg => {
             const date = new Date(msg.timestamp || msg.createdAt).toLocaleString();
+            const body = msg.type === 'VOICE'
+                ? `<div class="voice-message"><audio controls src="${msg.audioUrl}"></audio></div>`
+                : `<p class="card-text">${msg.content}</p>`;
             container.innerHTML += `
                 <div class="card">
                     <h5 class="card-title">${msg.author?.username || 'Аноним'}</h5>
-                    <p class="card-text">${msg.content}</p>
+                    ${body}
                     <small class="text-muted">${date}</small>
                 </div>
             `;
@@ -425,6 +467,74 @@
             console.error(error);
         }
     });
+
+    let mediaRecorder = null;
+    let recordedChunks = [];
+
+    const micBtn = document.getElementById('mic-btn');
+
+    micBtn.addEventListener('click', async () => {
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+            mediaRecorder.stop();
+            return;
+        }
+        await startRecording();
+    });
+
+    async function startRecording() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : '';
+            mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+            recordedChunks = [];
+
+            mediaRecorder.addEventListener('dataavailable', (e) => {
+                if (e.data.size > 0) recordedChunks.push(e.data);
+            });
+
+            mediaRecorder.addEventListener('stop', () => {
+                stream.getTracks().forEach(track => track.stop());
+                micBtn.classList.remove('recording');
+                const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+                if (blob.size > 0) {
+                    uploadVoiceMessage(blob);
+                }
+            });
+
+            mediaRecorder.start();
+            micBtn.classList.add('recording');
+        } catch (error) {
+            console.error(error);
+            alert('Не удалось получить доступ к микрофону');
+        }
+    }
+
+    async function uploadVoiceMessage(blob) {
+        micBtn.disabled = true;
+        try {
+            const extension = (blob.type.split('/')[1] || 'webm').split(';')[0];
+            const formData = new FormData();
+            formData.append('file', blob, `voice-message.${extension}`);
+
+            const response = await fetch(`/api/groups/${groupId}/messages/send-voice`, {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token },
+                body: formData
+            });
+
+            if (response.ok) {
+                await loadGroup();
+            } else {
+                const err = await response.json().catch(() => null);
+                alert(err?.message || 'Не удалось отправить голосовое сообщение');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Не удалось отправить голосовое сообщение');
+        } finally {
+            micBtn.disabled = false;
+        }
+    }
 
     async function addGroupMember(memberId) {
         try {

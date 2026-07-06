@@ -29,5 +29,11 @@ public class ChatMessage {
     @Column(columnDefinition = "TEXT")
     private String content;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private MessageType type = MessageType.TEXT;
+
+    private String audioUrl;
+
     private LocalDateTime sentAt = LocalDateTime.now();
 }
