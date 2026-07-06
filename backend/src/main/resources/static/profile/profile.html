@@ -106,12 +106,17 @@
         }
 
         .avatar-wrapper {
+            position: relative;
             width: 100px; height: 100px;
             border-radius: 50%;
             border: 4px solid #fff;
             overflow: hidden;
             background-color: #c5d0e0;
             flex-shrink: 0;
+        }
+
+        #avatar-content {
+            width: 100%; height: 100%;
         }
 
         .avatar-wrapper img {
@@ -127,6 +132,28 @@
             font-size: 40px;
             color: #fff;
             background: linear-gradient(135deg, #2787F5, #5bb5f5);
+        }
+
+        .avatar-upload-btn {
+            position: absolute;
+            bottom: 0; right: 0;
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            background-color: #2787F5;
+            color: #fff;
+            border: 2px solid #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+        }
+
+        .avatar-upload-btn:hover { background-color: #1e6ac2; }
+
+        .avatar-upload-btn:disabled {
+            background-color: #a9c7ec;
+            cursor: default;
         }
 
         .profile-name-block { padding-bottom: 4px; }
@@ -221,7 +248,13 @@
 
             <div class="profile-header">
                 <div class="avatar-wrapper" id="avatar-wrapper">
-                    <div class="avatar-placeholder"><i class="fas fa-user"></i></div>
+                    <div id="avatar-content">
+                        <div class="avatar-placeholder"><i class="fas fa-user"></i></div>
+                    </div>
+                    <button type="button" class="avatar-upload-btn" id="avatar-upload-btn" title="Загрузить аватар" onclick="document.getElementById('avatar-input').click()">
+                        <i class="fas fa-camera"></i>
+                    </button>
+                    <input type="file" id="avatar-input" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;">
                 </div>
                 <div class="profile-name-block">
                     <h1 class="profile-name" id="display-name">—</h1>
@@ -300,8 +333,7 @@
             setField('info-age', user.age != null ? user.age + ' лет' : null);
 
             if (user.avatarUrl) {
-                document.getElementById('avatar-wrapper').innerHTML =
-                    `<img src="${user.avatarUrl}" alt="Аватар">`;
+                setAvatarImage(user.avatarUrl);
             }
 
         } catch (e) {
@@ -309,6 +341,45 @@
             document.getElementById('error-block').style.display = 'block';
         }
     }
+
+    function setAvatarImage(avatarUrl) {
+        document.getElementById('avatar-content').innerHTML =
+            `<img src="${avatarUrl}?t=${Date.now()}" alt="Аватар">`;
+    }
+
+    document.getElementById('avatar-input').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const uploadBtn = document.getElementById('avatar-upload-btn');
+        uploadBtn.disabled = true;
+        uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await fetch('/api/users/me/avatar', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Не удалось загрузить аватар');
+            }
+
+            setAvatarImage(data.avatarUrl);
+        } catch (err) {
+            alert(err.message || 'Не удалось загрузить аватар');
+        } finally {
+            uploadBtn.disabled = false;
+            uploadBtn.innerHTML = '<i class="fas fa-camera"></i>';
+            e.target.value = '';
+        }
+    });
 
     function setField(elementId, value) {
         const el = document.getElementById(elementId);

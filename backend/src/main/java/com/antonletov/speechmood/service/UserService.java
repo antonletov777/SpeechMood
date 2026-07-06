@@ -6,22 +6,35 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
 
+    private static final Set<String> ALLOWED_AVATAR_TYPES = Set.of("image/jpeg", "image/png", "image/webp", "image/gif");
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Value("${app.upload.dir}")
+    private String uploadDir;
 
     @Transactional
     public User registerUser(String username, String rawPassword) {
@@ -109,6 +122,58 @@ public class UserService implements UserDetailsService {
     @Transactional(readOnly = true)
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    @Transactional
+    public User updateAvatar(Long userId, MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Файл аватарки не может быть пустым");
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null || !ALLOWED_AVATAR_TYPES.contains(contentType)) {
+            throw new IllegalArgumentException("Допустимые форматы изображения: JPEG, PNG, WEBP, GIF");
+        }
+
+        User user = getUserById(userId);
+
+        try {
+            Path dir = Path.of(uploadDir);
+            Files.createDirectories(dir);
+
+            String extension = switch (contentType) {
+                case "image/png" -> ".png";
+                case "image/webp" -> ".webp";
+                case "image/gif" -> ".gif";
+                default -> ".jpg";
+            };
+            String fileName = UUID.randomUUID() + extension;
+            Path target = dir.resolve(fileName);
+            file.transferTo(target);
+
+            String oldAvatarUrl = user.getAvatarUrl();
+            user.setAvatarUrl("/uploads/avatars/" + fileName);
+            User savedUser = userRepository.save(user);
+
+            deleteOldAvatarFile(oldAvatarUrl);
+
+            log.info("Аватар пользователя {} обновлен: {}", user.getUsername(), fileName);
+            return savedUser;
+        } catch (IOException e) {
+            throw new UncheckedIOException("Не удалось сохранить файл аватарки", e);
+        }
+    }
+
+    private void deleteOldAvatarFile(String oldAvatarUrl) {
+        if (oldAvatarUrl == null || !oldAvatarUrl.startsWith("/uploads/avatars/")) {
+            return;
+        }
+        try {
+            String oldFileName = oldAvatarUrl.substring("/uploads/avatars/".length());
+            Files.deleteIfExists(Path.of(uploadDir).resolve(oldFileName));
+        } catch (IOException e) {
+            log.warn("Не удалось удалить старый файл аватарки {}: {}", oldAvatarUrl, e.getMessage());
+        }
     }
 
 }

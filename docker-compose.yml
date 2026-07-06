@@ -26,6 +26,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/speechmood
       SPRING_DATASOURCE_USERNAME: leon
       SPRING_DATASOURCE_PASSWORD: password123
+    volumes:
+      - avatar-uploads:/app/uploads
     networks:
       - speechmood-network
 
@@ -45,3 +47,6 @@ services:
 networks:
   speechmood-network:
     driver: bridge
+
+volumes:
+  avatar-uploads:

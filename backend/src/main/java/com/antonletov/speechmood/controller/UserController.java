@@ -8,6 +8,7 @@ import com.antonletov.speechmood.dto.UserDTO;
 import org.springframework.http.ResponseEntity;
 import com.antonletov.speechmood.service.FriendshipService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.util.List;
@@ -37,6 +38,22 @@ public class UserController {
         result.put("age", user.getAge());
         result.put("avatarUrl", user.getAvatarUrl());
         return ResponseEntity.ok(result);
+    }
+
+
+    @PostMapping("/me/avatar")
+    public ResponseEntity<?> uploadAvatar(@RequestParam("file") MultipartFile file, Principal principal) {
+        try {
+            User user = userService.getUserByUsername(principal.getName());
+            User updatedUser = userService.updateAvatar(user.getId(), file);
+
+            return ResponseEntity.ok(Map.of("avatarUrl", updatedUser.getAvatarUrl()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            log.error("Ошибка при загрузке аватара: ", e);
+            return ResponseEntity.internalServerError().body(Map.of("message", "Не удалось загрузить аватар"));
+        }
     }
 
 
