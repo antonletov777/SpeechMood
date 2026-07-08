@@ -1,7 +1,7 @@
 package com.antonletov.speechmood.service;
 
+import com.antonletov.speechmood.enums.FriendshipStatus;
 import com.antonletov.speechmood.model.Friendship;
-import com.antonletov.speechmood.model.FriendshipStatus;
 import com.antonletov.speechmood.model.User;
 import com.antonletov.speechmood.repository.FriendshipRepository;
 import com.antonletov.speechmood.repository.UserRepository;

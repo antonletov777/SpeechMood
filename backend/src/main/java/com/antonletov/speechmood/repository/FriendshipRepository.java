@@ -1,7 +1,7 @@
 package com.antonletov.speechmood.repository;
 
+import com.antonletov.speechmood.enums.FriendshipStatus;
 import com.antonletov.speechmood.model.Friendship;
-import com.antonletov.speechmood.model.FriendshipStatus;
 import com.antonletov.speechmood.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
