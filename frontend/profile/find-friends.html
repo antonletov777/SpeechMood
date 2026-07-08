@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Найти друзей | SpeechMood</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="app-layout">
+    <div class="sidebar"><h3>SpeechMood</h3><nav><ul><li>Мои друзья</li><li>Профиль</li></ul></nav></div>
+    <div class="main-content">
+        <div class="top-bar">
+            <h2>Найти друзей</h2>
+            <div class="btn-group">
+                <a href="/requests.html" class="btn-nav">Заявки в друзья</a>
+            </div>
+        </div>
+        <div class="profile-grid" id="profile-grid"></div>
+    </div>
+</div>
+<script>
+    async function loadProfiles() {
+        const token = localStorage.getItem('access');
+        const grid = document.getElementById('profile-grid');
+        const response = await fetch('/api/users', { headers: { 'Authorization': 'Bearer ' + token } });
+        const users = await response.json();
+
+        grid.innerHTML = '';
+        users.forEach(async (user) => {
+            const statusRes = await fetch(`/api/users/${user.id}/status`, { headers: { 'Authorization': 'Bearer ' + token } });
+            const data = await statusRes.json();
+
+            if (data.status === 'NONE') {
+                const card = document.createElement('div');
+                card.className = 'profile-card';
+                card.innerHTML = `<h5>${user.username}</h5><button onclick="followUser(${user.id})">Подписаться</button>`;
+                grid.appendChild(card);
+            }
+        });
+    }
+    // ... функции followUser и др.
+</script>
+</body>
+</html>

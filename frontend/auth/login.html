@@ -111,7 +111,7 @@
             </div>
 
             <div class="register-class">
-                <button type="button" onclick="window.location.href='/register.html'">Регистрация</button>
+                <button type="button" onclick="window.location.href='/auth/register.html'">Регистрация</button>
             </div>
         </form>
     </div>
@@ -147,7 +147,7 @@
                 }
                 localStorage.setItem('username', username);
 
-                window.location.href = '/index.html';
+                window.location.href = '/auth/index.html';
             } else {
                 try {
                     const errorData = await response.json();
