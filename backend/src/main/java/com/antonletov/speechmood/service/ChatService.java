@@ -2,7 +2,7 @@ package com.antonletov.speechmood.service;
 
 import com.antonletov.speechmood.model.Chat;
 import com.antonletov.speechmood.model.ChatMessage;
-import com.antonletov.speechmood.model.MessageType;
+import com.antonletov.speechmood.enums.MessageType;
 import com.antonletov.speechmood.model.User;
 import com.antonletov.speechmood.repository.ChatMessageRepository;
 import com.antonletov.speechmood.repository.ChatRepository;

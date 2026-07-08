@@ -1,5 +1,6 @@
 package com.antonletov.speechmood.model;
 
+import com.antonletov.speechmood.enums.FriendshipStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

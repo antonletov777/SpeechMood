@@ -1,6 +1,6 @@
 package com.antonletov.speechmood.dto;
 
-import com.antonletov.speechmood.model.FriendshipStatus;
+import com.antonletov.speechmood.enums.FriendshipStatus;
 import lombok.Builder;
 import lombok.Data;
 
