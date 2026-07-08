@@ -25,10 +25,10 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico",
-                        "/", "/auth/**", "/groups/**", "/profile/**", "/uploads/**",
-                        "/api/auth/login", "/api/auth/register",
-                        "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/error", "/listProfile.html", "/list.html", "/create.html").permitAll()
+                        .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico", "/uploads/**",
+                        "/auth/login.html", "/auth/register.html",
+                        "/api/auth/login", "/api/auth/register", "/api/auth/verify",
+                        "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/error").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

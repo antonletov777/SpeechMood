@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лента постов</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { margin: 0; font-family: sans-serif; background-color: #f4f4f9; padding-top: 60px; }
+
+        .top-bar { position: fixed; top: 0; left: 0; width: 100%; height: 50px; background-color: #ffffff; box-shadow: 0 1px 2px rgba(0,0,0,0.1); z-index: 1000; display: flex; justify-content: center; align-items: center; }
+        .top-bar-content { width: 100%; max-width: 960px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; }
+        .logo { font-size: 20px; font-weight: bold; color: #2787F5; text-decoration: none; }
+
+        .main-layout { max-width: 960px; margin: 20px auto; display: flex; gap: 20px; padding: 0 15px; }
+        .left-sidebar { width: 160px; flex-shrink: 0; }
+        .side-menu a { display: flex; align-items: center; text-decoration: none; color: #333; font-size: 14px; padding: 8px 10px; border-radius: 6px; margin-bottom: 5px; }
+        .side-menu a:hover { background-color: #e1e3e6; }
+
+        .feed { flex-grow: 1; }
+
+        .index-page .post { width: 100%; margin-bottom: 20px; background-color: white; padding: 15px; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative; }
+        .create-post-btn { background-color: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; display: block; margin-bottom: 20px; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .modal { background-color: white; padding: 20px; width: 400px; border-radius: 8px; }
+        .delete-btn { position: absolute; bottom: 10px; right: 10px; background-color: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<header class="top-bar">
+    <div class="top-bar-content">
+        <a href="/auth/index.html" class="logo">SpeechMood</a>
+        <button onclick="logout()" style="background:none; border:none; cursor:pointer;">Выйти</button>
+    </div>
+</header>
+
+<div class="main-layout">
+    <aside class="left-sidebar">
+        <nav class="side-menu">
+            <a href="/profile/profile.html"><i class="fas fa-user-circle" style="margin-right:10px;"></i> Профиль</a>
+            <a href="/auth/index.html"><i class="fas fa-newspaper" style="margin-right:10px;"></i> Лента</a>
+            <a href="/profile/listProfile.html"><i class="fas fa-user-friends" style="margin-right:10px;"></i> Друзья</a>
+            <a href="/groups/list.html"><i class="fas fa-users" style="margin-right:10px;"></i> Группы</a>
+        </nav>
+    </aside>
+
+    <main class="feed">
+        <button class="create-post-btn" onclick="openModal()">Создать пост</button>
+
+        <div id="modal-overlay" class="modal-overlay" style="display: none;">
+            <div class="modal">
+                <span>Создание поста</span>
+                <textarea id="post-content" rows="5" style="width: 100%; margin: 10px 0;"></textarea>
+                <button onclick="submitPost()">Отправить</button>
+                <button onclick="closeModal()">Закрыть</button>
+            </div>
+        </div>
+
+        <div id="post-feed"><p>Загрузка постов...</p></div>
+    </main>
+</div>
+
+<script>
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (localStorage.getItem('access')) loadPosts();
+        else window.location.href = '/login.html';
+    });
+
+    function openModal() { document.getElementById('modal-overlay').style.display = 'flex'; }
+    function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
+    function logout() { localStorage.clear(); window.location.href = '/auth/login.html'; }
+
+    async function loadPosts() {
+        const response = await fetch('/api/posts', { headers: { 'Authorization': 'Bearer ' + localStorage.getItem('access') } });
+        const posts = await response.json();
+        const postFeed = document.getElementById('post-feed');
+        postFeed.innerHTML = '';
+        posts.forEach(post => {
+            const div = document.createElement('div');
+            div.className = 'post';
+            div.innerHTML = `
+                <div class="post-header"><strong>${post.author?.username || 'Автор'}</strong></div>
+                <p>${post.content}</p>
+                ${post.author?.username === localStorage.getItem("username") ? `<button class="delete-btn" onclick="deletePost(${post.id})">✖</button>` : ''}
+            `;
+            postFeed.appendChild(div);
+        });
+    }
+
+    async function submitPost() {
+        const content = document.getElementById('post-content').value;
+        await fetch('/api/posts/create', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('access'), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content })
+        });
+        document.getElementById('post-content').value = '';
+        closeModal();
+        loadPosts();
+    }
+
+    async function deletePost(id) {
+        await fetch(`/api/posts/${id}/delete`, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + localStorage.getItem('access') } });
+        loadPosts();
+    }
+</script>
+</body>
+</html>

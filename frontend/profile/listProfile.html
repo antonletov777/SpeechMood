@@ -57,10 +57,19 @@
             border-radius: 5px;
             text-decoration: none;
             transition: background-color 0.3s ease;
+            text-align: center;
         }
 
         .friends-stats a.btn:hover {
             background-color: rgb(30, 124, 69);
+        }
+
+        .friends-stats a.btn-requests {
+            background-color: #9b59b6;
+        }
+
+        .friends-stats a.btn-requests:hover {
+            background-color: #8e44ad;
         }
 
         .profile-grid {
@@ -176,11 +185,14 @@
 
 <div class="profiles-container">
     <h2>Мои подписки</h2>
-    <button onclick="window.location.href='/index.html'" class="btn-back">← Назад</button>
+    <button onclick="window.location.href='/auth/index.html'" class="btn-back">← Назад</button>
 
     <div class="friends-stats">
         <span class="badge" id="friends-count">У вас 0 подписок</span>
-        <a href="/frontend/add.html" class="btn">Подписаться</a>
+        <div style="display: flex; flex-direction: column; gap: 8px; align-items: stretch;">
+            <a href="/profile/friend-requests.html" class="btn btn-requests">Заявки в друзья</a>
+            <a href="/profile/add.html" class="btn">Подписаться</a>
+        </div>
     </div>
 
     <div class="profile-grid" id="friends-grid"></div>
@@ -222,7 +234,7 @@
                 card.className = 'friend-card';
                 card.innerHTML = `
                     <div class="friend-avatar">
-                        <img src="/images/avatar-placeholder.png" alt="Avatar">
+                        <img src="${friend.avatarUrl || '/images/avatar-placeholder.svg'}" alt="Avatar">
                     </div>
                     <div class="friend-info">
                         <h5>${friend.username}</h5>

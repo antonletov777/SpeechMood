@@ -122,28 +122,74 @@
                 headers: { 'Authorization': 'Bearer ' + token }
             });
 
-            if (!response.ok) throw new Error('Ошибка загрузки');
+            if (!response.ok) throw new Error('Ошибка загрузки пользователей');
 
             const users = await response.json();
             grid.innerHTML = '';
 
-            users.forEach(user => {
+            users.forEach((user) => {
+                // 1. Исключаем текущего пользователя из списка
                 if (user.username === currentUsername) return;
 
                 const card = document.createElement('div');
                 card.className = 'profile-card';
                 card.innerHTML = `
-                    <img src="/images/avatar-placeholder.png" alt="Avatar">
-                    <h5>${user.username}</h5>
-                    <p>@${user.username}</p>
-                    <a href="/profile/detail.html?id=${user.id}">Профиль</a>
-                    <button onclick="followUser(${user.id}, '${user.username}')">Подписаться</button>
-                `;
+                <img src="${user.avatarUrl || '/images/avatar-placeholder.svg'}" alt="Avatar">
+                <h5>${user.username}</h5>
+                <p>@${user.username}</p>
+                <a href="/profile/detail.html?id=${user.id}">Профиль</a>
+                <button id="btn-${user.id}" onclick="followUser(${user.id}, '${user.username}')">Подписаться</button>
+            `;
                 grid.appendChild(card);
+
+                updateButtonStatus(user.id);
             });
         } catch (error) {
-            console.error(error);
-            grid.innerHTML = '<p style="text-align:center; color:red;">Не удалось загрузить пользователей.</p>';
+            console.error("Ошибка загрузки:", error);
+        }
+    }
+
+    async function updateButtonStatus(userId) {
+        const token = localStorage.getItem('access');
+        try {
+            const response = await fetch(`/api/users/${userId}/status`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const data = await response.json();
+            const btn = document.getElementById(`btn-${userId}`);
+
+            if (!btn) return;
+
+            if (data.status === 'ACCEPTED') {
+                btn.textContent = "Вы друзья";
+                btn.disabled = true;
+                btn.style.backgroundColor = "#95a5a6";
+            } else if (data.status === 'PENDING') {
+                btn.textContent = "Заявка отправлена";
+                btn.disabled = true;
+                btn.style.backgroundColor = "#f39c12";
+            }
+        } catch (error) {
+            console.error("Ошибка получения статуса:", error);
+        }
+    }
+
+    async function updateButtonStatus(userId) {
+        const token = localStorage.getItem('access');
+        const response = await fetch(`/api/users/${userId}/status`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await response.json();
+        const btn = document.getElementById(`btn-${userId}`);
+
+        if (data.status === 'PENDING') {
+            btn.textContent = "Заявка отправлена";
+            btn.disabled = true;
+            btn.style.backgroundColor = "#f39c12";
+        } else if (data.status === 'ACCEPTED') {
+            btn.textContent = "Вы друзья";
+            btn.disabled = true;
+            btn.style.backgroundColor = "#95a5a6";
         }
     }
 
