@@ -1,7 +1,7 @@
 package com.antonletov.speechmood.controller;
 
 import com.antonletov.speechmood.dto.MessagePayload;
-import com.antonletov.speechmood.model.PostComment;
+import com.antonletov.speechmood.dto.PostCommentDTO;
 import com.antonletov.speechmood.model.User;
 import com.antonletov.speechmood.service.PostCommentService;
 import com.antonletov.speechmood.service.UserService;
@@ -20,19 +20,19 @@ public class MessageController {
     private final UserService userService;
 
     @PostMapping("/create")
-    public ResponseEntity<PostComment> create(@RequestBody MessagePayload payload, Principal principal) {
+    public ResponseEntity<PostCommentDTO> create(@RequestBody MessagePayload payload, Principal principal) {
         User user = userService.getUserByUsername(principal.getName());
 
-        return ResponseEntity.ok(commentService.addComment(
+        return ResponseEntity.ok(PostCommentDTO.from(commentService.addComment(
                 user.getId(),
                 payload.getPost(),
                 payload.getContent()
-        ));
+        )));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PostComment> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(commentService.getCommentById(id));
+    public ResponseEntity<PostCommentDTO> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(PostCommentDTO.from(commentService.getCommentById(id)));
     }
 
     @DeleteMapping("/{id}/delete")

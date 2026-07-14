@@ -1,6 +1,6 @@
 package com.antonletov.speechmood.controller;
 
-import com.antonletov.speechmood.model.Post;
+import com.antonletov.speechmood.dto.PostDTO;
 import com.antonletov.speechmood.model.User;
 import com.antonletov.speechmood.service.PostService;
 import com.antonletov.speechmood.service.UserService;
@@ -21,20 +21,24 @@ public class PostController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<List<Post>> getFeed() {
-        return ResponseEntity.ok(postService.getGlobalFeed());
+    public ResponseEntity<List<PostDTO>> getFeed() {
+        List<PostDTO> posts = postService.getGlobalFeed().stream()
+                .map(PostDTO::from)
+                .toList();
+
+        return ResponseEntity.ok(posts);
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Post> create(@RequestBody Map<String, String> payload, Principal principal) {
+    public ResponseEntity<PostDTO> create(@RequestBody Map<String, String> payload, Principal principal) {
         User user = userService.getUserByUsername(principal.getName());
 
-        return ResponseEntity.ok(postService.createPost(user.getId(), payload.get("content")));
+        return ResponseEntity.ok(PostDTO.from(postService.createPost(user.getId(), payload.get("content"))));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Post> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(postService.getPostById(id));
+    public ResponseEntity<PostDTO> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(PostDTO.from(postService.getPostById(id)));
     }
 
     @DeleteMapping("/{id}/delete")

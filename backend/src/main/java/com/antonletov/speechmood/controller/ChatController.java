@@ -1,5 +1,7 @@
 package com.antonletov.speechmood.controller;
 
+import com.antonletov.speechmood.dto.ChatDetailDTO;
+import com.antonletov.speechmood.dto.ChatSummaryDTO;
 import com.antonletov.speechmood.model.Chat;
 import com.antonletov.speechmood.model.ChatMessage;
 import com.antonletov.speechmood.model.User;
@@ -12,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -28,20 +29,12 @@ public class ChatController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<List<Map<String, Object>>> getUserGroups(Principal principal) {
+    public ResponseEntity<List<ChatSummaryDTO>> getUserGroups(Principal principal) {
         User currentUser = userService.getUserByUsername(principal.getName());
-        List<Chat> groups = chatService.getUserGroups(currentUser.getId());
-        List<Map<String, Object>> result = groups.stream()
-                .map(g -> {
-                    Map<String, Object> map = new java.util.HashMap<>();
-                    map.put("id", g.getId());
-                    map.put("name", g.getTitle());
-                    if (g.getCreator() != null) {
-                        map.put("author", Map.of("username", g.getCreator().getUsername()));
-                    }
-                    return map;
-                })
+        List<ChatSummaryDTO> result = chatService.getUserGroups(currentUser.getId()).stream()
+                .map(ChatSummaryDTO::from)
                 .toList();
+
         return ResponseEntity.ok(result);
     }
 
@@ -49,42 +42,7 @@ public class ChatController {
     public ResponseEntity<?> getGroup(@PathVariable Long id, Principal principal) {
         try {
             Chat group = chatService.getGroupById(id);
-
-            Map<String, Object> result = new HashMap<>();
-            result.put("id", group.getId());
-            result.put("name", group.getTitle());
-
-            if (group.getCreator() != null) {
-                result.put("author", Map.of("username", group.getCreator().getUsername()));
-            }
-
-            List<Map<String, Object>> members = group.getParticipants().stream()
-                    .map(u -> {
-                        Map<String, Object> member = new HashMap<>();
-                        member.put("id", u.getId());
-                        member.put("username", u.getUsername());
-                        member.put("avatarUrl", u.getAvatarUrl());
-                        return member;
-                    })
-                    .toList();
-            result.put("members", members);
-
-            List<Map<String, Object>> messages = group.getMessages().stream()
-                    .map(m -> {
-                        Map<String, Object> msg = new HashMap<>();
-                        msg.put("content", m.getContent());
-                        msg.put("type", m.getType().name());
-                        msg.put("audioUrl", m.getAudioUrl());
-                        msg.put("timestamp", m.getSentAt());
-                        if (m.getSender() != null) {
-                            msg.put("author", Map.of("username", m.getSender().getUsername()));
-                        }
-                        return msg;
-                    })
-                    .toList();
-            result.put("messages", messages);
-
-            return ResponseEntity.ok(result);
+            return ResponseEntity.ok(ChatDetailDTO.from(group));
         } catch (jakarta.persistence.EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
