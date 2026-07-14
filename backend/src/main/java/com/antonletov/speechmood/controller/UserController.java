@@ -51,14 +51,14 @@ public class UserController {
 
 
     @PutMapping("/change-password")
-    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> payload, Principal principal) {
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordPayload payload, Principal principal) {
         try {
             User user = userService.getUserByUsername(principal.getName());
 
             userService.changePassword(
                     user.getId(),
-                    payload.get("oldPassword"),
-                    payload.get("newPassword")
+                    payload.getOldPassword(),
+                    payload.getNewPassword()
             );
 
             return ResponseEntity.ok(Map.of("message", "Пароль успешно обновлен"));
