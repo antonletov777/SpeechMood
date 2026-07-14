@@ -5,6 +5,7 @@ import com.antonletov.speechmood.model.Friendship;
 import com.antonletov.speechmood.model.User;
 import com.antonletov.speechmood.service.UserService;
 import com.antonletov.speechmood.dto.UserDTO;
+import com.antonletov.speechmood.dto.UserProfileDTO;
 import org.springframework.http.ResponseEntity;
 import com.antonletov.speechmood.service.FriendshipService;
 import org.springframework.web.bind.annotation.*;
@@ -27,17 +28,9 @@ public class UserController {
     private final FriendshipService friendshipService;
 
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(Principal principal) {
+    public ResponseEntity<UserProfileDTO> getCurrentUser(Principal principal) {
         User user = userService.getUserByUsername(principal.getName());
-
-        Map<String, Object> result = new java.util.HashMap<>();
-        result.put("id", user.getId());
-        result.put("username", user.getUsername());
-        result.put("firstName", user.getFirstName());
-        result.put("gender", user.getGender());
-        result.put("age", user.getAge());
-        result.put("avatarUrl", user.getAvatarUrl());
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(UserProfileDTO.from(user));
     }
 
 
@@ -81,14 +74,8 @@ public class UserController {
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         List<User> users = userService.getAllUsers();
-
-        // Преобразование из Entity в DTO
         List<UserDTO> userDTOs = users.stream()
-                .map(user -> UserDTO.builder()
-                        .id(user.getId())
-                        .username(user.getUsername())
-                        .avatarUrl(user.getAvatarUrl())
-                        .build())
+                .map(UserDTO::from)
                 .toList();
 
         return ResponseEntity.ok(userDTOs);
@@ -96,8 +83,8 @@ public class UserController {
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.getUserById(id));
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
+        return ResponseEntity.ok(UserDTO.from(userService.getUserById(id)));
     }
 
 
@@ -108,10 +95,13 @@ public class UserController {
     }
 
     @GetMapping("/friends")
-    public ResponseEntity<List<User>> getFriends(Principal principal) {
-
+    public ResponseEntity<List<UserDTO>> getFriends(Principal principal) {
         User currentUser = userService.getUserByUsername(principal.getName());
-        return ResponseEntity.ok(friendshipService.getFriends(currentUser.getId()));
+        List<UserDTO> friends = friendshipService.getFriends(currentUser.getId()).stream()
+                .map(UserDTO::from)
+                .toList();
+
+        return ResponseEntity.ok(friends);
     }
 
     @PostMapping("/{id}/follow")
@@ -132,18 +122,13 @@ public class UserController {
     }
 
     @GetMapping("/friend-requests")
-    public ResponseEntity<List<Map<String, Object>>> getIncomingRequests(Principal principal) {
+    public ResponseEntity<List<UserDTO>> getIncomingRequests(Principal principal) {
         User currentUser = userService.getUserByUsername(principal.getName());
         List<Friendship> requests = friendshipService.getIncomingRequests(currentUser.getId());
-        List<Map<String, Object>> result = requests.stream()
-                .map(f -> {
-                    Map<String, Object> map = new java.util.HashMap<>();
-                    map.put("id", f.getRequester().getId());
-                    map.put("username", f.getRequester().getUsername());
-                    map.put("avatarUrl", f.getRequester().getAvatarUrl());
-                    return map;
-                })
+        List<UserDTO> result = requests.stream()
+                .map(f -> UserDTO.from(f.getRequester()))
                 .toList();
+
         return ResponseEntity.ok(result);
     }
 

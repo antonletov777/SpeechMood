@@ -6,15 +6,21 @@ import lombok.Data;
 
 @Data
 @Builder
-public class UserDTO {
+public class UserProfileDTO {
     private Long id;
     private String username;
+    private String firstName;
+    private String gender;
+    private Integer age;
     private String avatarUrl;
 
-    public static UserDTO from(User user) {
-        return UserDTO.builder()
+    public static UserProfileDTO from(User user) {
+        return UserProfileDTO.builder()
                 .id(user.getId())
                 .username(user.getUsername())
+                .firstName(user.getFirstName())
+                .gender(user.getGender())
+                .age(user.getAge())
                 .avatarUrl(user.getAvatarUrl())
                 .build();
     }
